@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/Core/">
+    <Project Path="src/Core/SmartFinance.Application/SmartFinance.Application.csproj" />
+    <Project Path="src/Core/SmartFinance.Domain/SmartFinance.Domain.csproj" />
+  </Folder>
+  <Folder Name="/src/Infrastructure/">
+    <Project Path="src/Infrastructure/SmartFinance.Infrastructure/SmartFinance.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Presentation/">
+    <Project Path="src/Presentation/SmartFinance.WebApi/SmartFinance.WebApi.csproj" />
+  </Folder>
+</Solution>
