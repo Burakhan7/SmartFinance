@@ -1,4 +1,4 @@
-using SmartFinance.Domain.Common;
+ using SmartFinance.Domain.Common;
 
 namespace SmartFinance.Domain.Entities;
 
