@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SmartFinance.Application.Common.Interfaces;
+using SmartFinance.Infrastructure.Offers;
 using SmartFinance.Infrastructure.Persistence;
 using SmartFinance.Infrastructure.Providers;
 using SmartFinance.Infrastructure.Sync;
@@ -18,6 +19,8 @@ public static class DependencyInjection
 
         services.AddScoped<ITransactionProvider, MockTransactionProvider>();
         services.AddScoped<ITransactionSyncService, TransactionSyncService>();
+        services.AddScoped<ISpendingAnalyzer, SpendingAnalyzer>();
+        services.AddScoped<IOfferEngine, OfferEngine>();
         return services;
     }
 }
