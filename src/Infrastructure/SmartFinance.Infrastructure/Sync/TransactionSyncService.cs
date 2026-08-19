@@ -10,30 +10,35 @@ public class TransactionSyncService : ITransactionSyncService
 {
     private readonly AppDbContext _db;
     private readonly ITransactionProvider _provider;
+    private readonly IConsentService _consent;
 
-    public TransactionSyncService(AppDbContext db, ITransactionProvider provider)
+    public TransactionSyncService(
+        AppDbContext db, ITransactionProvider provider, IConsentService consent)
     {
         _db = db;
         _provider = provider;
+        _consent = consent;
     }
 
     public async Task<int> SyncCustomerAsync(Guid customerId, CancellationToken ct = default)
     {
-        // 1. Müşteriyi bul, yoksa oluştur
-        //    (test kolaylığı — gerçekte kayıt + rıza akışından gelecek)
+
+        // RIZA KONTROLÜ: aktif rıza yoksa veri çekme (yasal zorunluluk)
+        if (!await _consent.HasActiveConsentAsync(customerId, ct))
+        {
+            throw new InvalidOperationException(
+                "Bu müşteri için aktif rıza bulunmuyor. Önce rıza alınmalı.");
+        }
         var customer = await _db.Customers
             .Include(c => c.Cards)
             .FirstOrDefaultAsync(c => c.Id == customerId, ct);
 
+        // Rıza akışı müşteriyi zaten oluşturdu; buraya rızalı müşteri gelir.
+        // Yine de güvenlik için: müşteri yoksa sync yapılmaz.
         if (customer is null)
         {
-            customer = new Customer
-            {
-                Id = customerId,
-                FullName = "Test Kullanıcı",
-                Email = $"user-{customerId:N}@smartfinance.local"
-            };
-            _db.Customers.Add(customer);
+            throw new InvalidOperationException(
+                "Müşteri bulunamadı. Sync öncesi rıza akışı tamamlanmalı.");
         }
 
         // 2. Kartı yoksa oluştur (hareketler bir karta bağlanmak zorunda)
@@ -46,7 +51,8 @@ public class TransactionSyncService : ITransactionSyncService
                 MaskedNumber = "**** **** **** 1234",
                 Type = CardType.Credit
             };
-            customer.Cards.Add(card);
+            _db.Cards.Add(card);
+            await _db.SaveChangesAsync(ct); // kartı ÖNCE kaydet ki Id DB'de hazır olsun
         }
 
         // 3. Sağlayıcıdan çek. Pencereyi UtcNow.Date'e sabitliyorum ki
