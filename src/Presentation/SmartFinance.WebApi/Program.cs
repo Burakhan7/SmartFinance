@@ -62,4 +62,28 @@ app.MapPost("/customers/{customerId:guid}/offers/generate", async (
     return Results.Ok(offers);
 });
 
+// Rıza ver (kart bağlama anı)
+app.MapPost("/customers/{customerId:guid}/consent", async (
+    Guid customerId, IConsentService consent, CancellationToken ct) =>
+{
+    var record = await consent.GrantConsentAsync(customerId, 90, ct);
+    return Results.Ok(new { record.Id, record.GrantedAt, record.ExpiresAt, aktif = record.IsActive });
+});
+
+// Rıza geri çek
+app.MapDelete("/customers/{customerId:guid}/consent", async (
+    Guid customerId, IConsentService consent, CancellationToken ct) =>
+{
+    await consent.RevokeConsentAsync(customerId, ct);
+    return Results.Ok(new { mesaj = "Rıza geri çekildi, veri akışı durduruldu." });
+});
+
+// Rıza durumu
+app.MapGet("/customers/{customerId:guid}/consent", async (
+    Guid customerId, IConsentService consent, CancellationToken ct) =>
+{
+    var active = await consent.HasActiveConsentAsync(customerId, ct);
+    return Results.Ok(new { customerId, aktifRiza = active });
+});
+
 app.Run();
