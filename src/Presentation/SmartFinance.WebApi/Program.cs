@@ -46,4 +46,20 @@ app.MapGet("/customers/{customerId:guid}/transactions", async (
     return Results.Ok(txs);
 });
 
+// Analizi gör (fırsat üretmeden, sadece özet)
+app.MapGet("/customers/{customerId:guid}/analysis", async (
+    Guid customerId, ISpendingAnalyzer analyzer, CancellationToken ct) =>
+{
+    var analysis = await analyzer.AnalyzeAsync(customerId, ct);
+    return Results.Ok(analysis);
+});
+
+// Fırsat üret + DB'ye yaz
+app.MapPost("/customers/{customerId:guid}/offers/generate", async (
+    Guid customerId, IOfferEngine engine, CancellationToken ct) =>
+{
+    var offers = await engine.GenerateOffersAsync(customerId, ct);
+    return Results.Ok(offers);
+});
+
 app.Run();
