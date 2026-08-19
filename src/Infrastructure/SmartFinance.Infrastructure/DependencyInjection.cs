@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SmartFinance.Application.Common.Interfaces;
 using SmartFinance.Infrastructure.Persistence;
 using SmartFinance.Infrastructure.Providers;
+using SmartFinance.Infrastructure.Sync;
 
 namespace SmartFinance.Infrastructure;
 
@@ -16,6 +17,7 @@ public static class DependencyInjection
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
         services.AddScoped<ITransactionProvider, MockTransactionProvider>();
+        services.AddScoped<ITransactionSyncService, TransactionSyncService>();
         return services;
     }
 }
